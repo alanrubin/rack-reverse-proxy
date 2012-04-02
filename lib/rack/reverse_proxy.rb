@@ -62,7 +62,7 @@ module Rack
         body = ''
         res = http.request(req) do |res|
           res.read_body do |segment|
-            body << segment
+            body << matcher.gsub_body(segment, env)
           end
         end
 
@@ -149,6 +149,12 @@ module Rack
 
     def match?(path)
       match_path(path) ? true : false
+    end
+
+    def gsub_body(body, env)
+      return body unless options[:rewrite_content]
+
+      body.gsub(url, "#{env['rack.url_scheme']}://#{env['REMOTE_ADDR']}/")
     end
 
     def get_uri(path,env)

@@ -71,6 +71,26 @@ describe Rack::ReverseProxy do
       end
     end
 
+    describe "with rewrite content" do
+      def app
+        Rack::ReverseProxy.new(dummy_app) do
+          reverse_proxy '/test', 'http://example.com/', {:rewrite_content => true}
+        end
+      end
+
+      it "should not replace content when pattern not found" do
+        stub_request(:get, "http://example.com/test/pattern").to_return(:body => "no pattern here")
+        get '/test/pattern'
+        last_response.body.should == "no pattern here"
+      end
+
+      it "should replace content when pattern found" do
+        stub_request(:get, "http://example.com/test/pattern").to_return(:body => "my pattern is http://example.com/test/pattern now")
+        get '/test/pattern'
+        last_response.body.should == "my pattern is http://127.0.0.1/test/pattern now"
+      end
+    end
+
     describe "with basic auth turned on" do
       def app
         Rack::ReverseProxy.new(dummy_app) do
@@ -193,7 +213,7 @@ describe Rack::ReverseProxy do
               eval "#{method} '/test', {:test => 'test'}"
               last_response.body.should == "test=test"
             end
-          end
+          end 
         end
       end
     end
