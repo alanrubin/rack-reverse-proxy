@@ -74,20 +74,27 @@ describe Rack::ReverseProxy do
     describe "with rewrite content" do
       def app
         Rack::ReverseProxy.new(dummy_app) do
-          reverse_proxy '/test', 'http://example.com/', {:rewrite_content => true}
+          reverse_proxy '/test', 'http://example1.com/', {:rewrite_content => true}
+          reverse_proxy '/2test', lambda{ |env| 'http://example2.com/'}, {:rewrite_content => true}
         end
       end
 
       it "should not replace content when pattern not found" do
-        stub_request(:get, "http://example.com/test/pattern").to_return(:body => "no pattern here")
+        stub_request(:get, "http://example1.com/test/pattern").to_return(:body => "no pattern here")
         get '/test/pattern'
         last_response.body.should == "no pattern here"
       end
 
       it "should replace content when pattern found" do
-        stub_request(:get, "http://example.com/test/pattern").to_return(:body => "my pattern is http://example.com/test/pattern now")
+        stub_request(:get, "http://example1.com/test/pattern").to_return(:body => "my pattern is http://example1.com/test/pattern now")
         get '/test/pattern'
         last_response.body.should == "my pattern is http://127.0.0.1/test/pattern now"
+      end
+
+      it "should replace content when lambda pattern found" do
+        stub_request(:get, "http://example2.com/2test/pattern").to_return(:body => "my pattern is http://example2.com/2test/pattern now")
+        get '/2test/pattern'
+        last_response.body.should == "my pattern is http://127.0.0.1/2test/pattern now"
       end
     end
 

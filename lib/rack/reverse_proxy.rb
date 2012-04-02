@@ -154,7 +154,9 @@ module Rack
     def gsub_body(body, env)
       return body unless options[:rewrite_content]
 
-      body.gsub(url, "#{env['rack.url_scheme']}://#{env['REMOTE_ADDR']}/")
+      _url=(url.respond_to?(:call) ? url.call(env) : url)
+
+      body.gsub(_url, "#{env['rack.url_scheme']}://#{env['REMOTE_ADDR']}/")
     end
 
     def get_uri(path,env)
