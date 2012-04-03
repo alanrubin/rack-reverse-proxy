@@ -110,6 +110,12 @@ describe Rack::ReverseProxy do
         last_response.body.should == "my pattern is http://127.0.0.1/regextest/pattern now"
       end
 
+      it "should replace content when pattern found is duplicated in body" do
+        stub_request(:get, "http://example.com/pattern").to_return(:body => "http://example.com/pattern and http://example.com/pattern now")
+        get '/regextest/pattern'
+        last_response.body.should == "http://127.0.0.1/regextest/pattern and http://127.0.0.1/regextest/pattern now"
+      end
+
     end
 
     describe "with basic auth turned on" do
