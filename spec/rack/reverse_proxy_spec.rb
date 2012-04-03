@@ -104,6 +104,12 @@ describe Rack::ReverseProxy do
         last_response.body.should == "my pattern is http://127.0.0.1/regextest/pattern now"
       end
 
+      it "should replace content when pattern found independently of string case" do
+        stub_request(:get, "http://example.com/pattern").to_return(:body => "my pattern is hTTp://ExAmPlE.COM/pattern now")
+        get '/regextest/pattern'
+        last_response.body.should == "my pattern is http://127.0.0.1/regextest/pattern now"
+      end
+
     end
 
     describe "with basic auth turned on" do

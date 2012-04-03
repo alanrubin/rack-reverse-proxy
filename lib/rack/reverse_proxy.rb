@@ -153,7 +153,11 @@ module Rack
 
     def gsub_body(body, env, path, uri)
       return body unless options[:rewrite_content]
-      body.gsub(uri.to_s, "#{env['rack.url_scheme']}://#{env['REMOTE_ADDR']}#{path}")
+
+      # Creating regexp from uri - always ignore case in body
+      @uri_regexp ||= Regexp.new(uri.to_s, [Regexp::IGNORECASE])
+
+      body.gsub(@uri_regexp, "#{env['rack.url_scheme']}://#{env['REMOTE_ADDR']}#{path}")
     end
 
     def get_uri(path,env)
