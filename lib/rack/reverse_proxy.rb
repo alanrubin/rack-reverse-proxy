@@ -62,11 +62,11 @@ module Rack
         body = ''
         res = http.request(req) do |res|
           res.read_body do |segment|
-            body << matcher.gsub_body(segment, env, rackreq.fullpath, uri)
+            body << segment
           end
         end
 
-        [res.code, create_response_headers(res), [body]]
+        [res.code, create_response_headers(res), [matcher.gsub_body(body, env, rackreq.fullpath, uri)]]
       }
     end
 
